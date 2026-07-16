@@ -100,19 +100,19 @@
   }
   .hint.hidden { opacity: 0; }
 
-  /* 小飞虾 */
+  /* 小飞虾 - 容器透明，只有虾本身可点 */
   .shrimp-container {
     position: fixed;
-    z-index: 5;
-    pointer-events: auto;
+    z-index: 2;
+    pointer-events: none;
     bottom: 18vh;
-    right: 8vw;
+    left: 6vw;
     cursor: pointer;
-    transition: transform 0.3s ease;
   }
   .shrimp {
     font-size: 36px;
-    display: block;
+    display: inline-block;
+    pointer-events: auto;
     filter: drop-shadow(0 0 8px rgba(201,165,91,0.3));
     animation: shrimpFloat 3s ease-in-out infinite;
     transition: transform 0.3s;
@@ -147,7 +147,7 @@
   .shrimp-bubble {
     position: absolute;
     bottom: 110%;
-    right: -20px;
+    left: -10px;
     background: rgba(18,18,28,0.88);
     border: 1px solid rgba(201,165,91,0.2);
     border-radius: 14px;
@@ -171,17 +171,17 @@
     content: '';
     position: absolute;
     bottom: -6px;
-    right: 30px;
+    left: 20px;
     width: 10px;
     height: 10px;
     background: rgba(18,18,28,0.88);
-    border-right: 1px solid rgba(201,165,91,0.2);
+    border-left: 1px solid rgba(201,165,91,0.2);
     border-bottom: 1px solid rgba(201,165,91,0.2);
-    transform: rotate(45deg);
+    transform: rotate(-45deg);
   }
   /* 移动端适配 */
   @media (max-width: 480px) {
-    .shrimp-container { bottom: 15vh; right: 4vw; }
+    .shrimp-container { bottom: 15vh; left: 4vw; }
     .shrimp { font-size: 28px; }
   }
 
