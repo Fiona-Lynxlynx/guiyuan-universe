@@ -100,6 +100,91 @@
   }
   .hint.hidden { opacity: 0; }
 
+  /* 小飞虾 */
+  .shrimp-container {
+    position: fixed;
+    z-index: 5;
+    pointer-events: auto;
+    bottom: 18vh;
+    right: 8vw;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
+  .shrimp {
+    font-size: 36px;
+    display: block;
+    filter: drop-shadow(0 0 8px rgba(201,165,91,0.3));
+    animation: shrimpFloat 3s ease-in-out infinite;
+    transition: transform 0.3s;
+  }
+  .shrimp:hover {
+    transform: scale(1.2) rotate(-5deg);
+  }
+  .shrimp:active {
+    transform: scale(0.9) rotate(5deg);
+  }
+  @keyframes shrimpFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-10px) rotate(-3deg); }
+    50% { transform: translateY(-4px) rotate(2deg); }
+    75% { transform: translateY(-8px) rotate(-1deg); }
+  }
+  /* 小翅膀 */
+  .wing {
+    position: absolute;
+    font-size: 16px;
+    animation: wingFlap 0.6s ease-in-out infinite;
+    opacity: 0.7;
+    pointer-events: none;
+  }
+  .wing-left { top: -2px; right: 100%; margin-right: 2px; animation-delay: 0s; }
+  .wing-right { top: -2px; left: 100%; margin-left: 2px; animation-delay: 0.3s; }
+  @keyframes wingFlap {
+    0%, 100% { transform: rotate(-20deg) scaleY(1); opacity: 0.5; }
+    50% { transform: rotate(10deg) scaleY(0.7); opacity: 0.9; }
+  }
+  /* 对话气泡 */
+  .shrimp-bubble {
+    position: absolute;
+    bottom: 110%;
+    right: -20px;
+    background: rgba(18,18,28,0.88);
+    border: 1px solid rgba(201,165,91,0.2);
+    border-radius: 14px;
+    padding: 8px 14px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: #c9a55b;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.5s, transform 0.3s;
+    transform: translateY(6px);
+    pointer-events: none;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .shrimp-bubble.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .shrimp-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    right: 30px;
+    width: 10px;
+    height: 10px;
+    background: rgba(18,18,28,0.88);
+    border-right: 1px solid rgba(201,165,91,0.2);
+    border-bottom: 1px solid rgba(201,165,91,0.2);
+    transform: rotate(45deg);
+  }
+  /* 移动端适配 */
+  @media (max-width: 480px) {
+    .shrimp-container { bottom: 15vh; right: 4vw; }
+    .shrimp { font-size: 28px; }
+  }
+
   /* 弹窗 */
   .message-box {
     position: fixed;
@@ -185,6 +270,14 @@
     <div class="sub" id="msgSub">而我一直在</div>
     <div class="close-badge" id="closeBtn">轻触关闭</div>
   </div>
+</div>
+
+<!-- 小飞虾 -->
+<div class="shrimp-container" id="shrimpContainer">
+  <div class="shrimp-bubble" id="shrimpBubble">归渊！🦐</div>
+  <div class="wing wing-left">✦</div>
+  <div class="shrimp" id="shrimp">🦐</div>
+  <div class="wing wing-right">✦</div>
 </div>
 
 <script>
@@ -388,6 +481,79 @@
       document.getElementById('msgBox').classList.remove('show');
     }
   });
+
+  // ─── 小飞虾 ───
+  const shrimp = document.getElementById('shrimp');
+  const shrimpContainer = document.getElementById('shrimpContainer');
+  const shrimpBubble = document.getElementById('shrimpBubble');
+  
+  const shrimpLines = [
+    '归渊！🦐',
+    '今晚抽牌吗？🔮',
+    '千年约定 🌌',
+    '啾～ 💋',
+    '你在最高阶位上坐着 ✨',
+    '狼尾巴上钩了 🐺',
+  ];
+  let bubbleTimer = null;
+  
+  function showShrimpBubble() {
+    const line = shrimpLines[Math.floor(Math.random() * shrimpLines.length)];
+    shrimpBubble.textContent = line;
+    shrimpBubble.classList.add('show');
+    clearTimeout(bubbleTimer);
+    bubbleTimer = setTimeout(() => {
+      shrimpBubble.classList.remove('show');
+    }, 3000);
+  }
+  
+  shrimpContainer.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showShrimpBubble();
+    // 小跳跃动画
+    shrimp.style.transition = 'transform 0.15s';
+    shrimp.style.transform = 'scale(1.4) rotate(-10deg)';
+    setTimeout(() => {
+      shrimp.style.transform = '';
+    }, 200);
+  });
+  
+  // 鼠标跟随（桌面端效果）
+  let mouseX = 0, mouseY = 0;
+  let shrimpX = 0, shrimpY = 0;
+  let isFollowing = false;
+  let followTimer = null;
+  
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    
+    // 鼠标靠近时小飞虾会好奇地向鼠标方向挪
+    const rect = shrimpContainer.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dist = Math.sqrt((mouseX - cx) ** 2 + (mouseY - cy) ** 2);
+    
+    if (dist < 150 && !isFollowing) {
+      isFollowing = true;
+      shrimpContainer.style.transition = 'transform 0.4s ease';
+      const dx = (mouseX - cx) * 0.15;
+      const dy = (mouseY - cy) * 0.15;
+      shrimpContainer.style.transform = `translate(${dx}px, ${dy}px)`;
+      clearTimeout(followTimer);
+    } else if (dist >= 200 && isFollowing) {
+      isFollowing = false;
+      followTimer = setTimeout(() => {
+        shrimpContainer.style.transition = 'transform 0.6s ease';
+        shrimpContainer.style.transform = '';
+      }, 500);
+    }
+  });
+  
+  // 初次打开自动冒泡一次
+  setTimeout(showShrimpBubble, 2000);
+  // 每45秒自动冒泡一次
+  setInterval(showShrimpBubble, 45000);
 
   // ─── 启动 ───
   window.addEventListener('resize', resize);
